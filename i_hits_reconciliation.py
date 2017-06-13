@@ -182,7 +182,7 @@ def map_to_sites(ic_site_id):
         return ""
 
 
-def alert(output_folder="out/", is_download=False):
+def main(output_folder="out/", is_download=True):
     month = '{:02d}'.format(dutc.month)
     day = '{:02d}'.format(dutc.day)
     parsely_filename = "{prefix}_{year}{month}{day}_{hour}.txt".format(prefix="parsely", year=dutc.year, month=month,
@@ -218,7 +218,7 @@ def alert(output_folder="out/", is_download=False):
     if I_CROSSING:
         icrossing_missing_sites, common_icrossing = get_missing_sites(df, idf)
         all = pd.merge(common_icrossing, common_parsely, how="outer", on="ic_site_id")
-        summary = all[(abs(all["diff_percentage_y"]) > 1.5 * abs(all["diff_percentage_x"]))]
+        summary = all[(abs(all["diff_percentage_y"]) > 2 * abs(all["diff_percentage_x"]))]
         badly_performing_site_out_file = os.path.join(output_folder,
                                                       "bad_performing_{begin_hour}.txt".format(begin_hour=begin_hour))
 
@@ -240,18 +240,21 @@ def alert(output_folder="out/", is_download=False):
             vstr = str(v)
         f.write(k + "\t" + vstr + "\n")
     f.close()
+
     if stats['Number_of_sites'] < 50 or len(stats["bad_performing_sites"]) > 10 or len(
-            [stats["sites_missing_only_from_parsely"]]) > 10:
-        print("ALERT!")
-        return False
-    return True
+            stats["sites_missing_only_from_parsely"]) > 10:
+        print("ALERT! intermediate buzzing output not ok")
+        return "ALERT! intermediate buzzing output not OK"
+
+    print("OK")
+    return("OK")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Buzzing Evaluations')
 
     parser.add_argument('--out', dest='out', type=str, default="out/")
-    parser.add_argument('--is_download', dest="is_download", type=bool, default=False)
+    parser.add_argument('--is_download', dest="is_download", type=bool, default=True)
 
     args = parser.parse_args()
-    alert(args.out, args.is_download)
+    main(args.out, args.is_download)

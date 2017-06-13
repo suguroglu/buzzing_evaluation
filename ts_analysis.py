@@ -28,7 +28,6 @@ def main():
             month = '{:02d}'.format(dt.month)
             day = '{:02d}'.format(dt.day)
             period_str = "{year}/{month}/{day}/{hour}/{minute}/{bucket}/".format(year=dt.year, month=month, day=day, hour=hour, minute=min, bucket=buc)
-            print(period_str)
             hm_str = hour + ":" + min
             hm = datetime.datetime.strptime(hm_str, "%H:%M")
 
@@ -43,6 +42,7 @@ def main():
                 p_diff_max = np.max(parsely_diff)
                 if p_diff_max > 20:
                     return "ALERT: {delay} in data".format(delay=p_diff_max)
+                print("OK")
                 return "OK"
 
             except:
@@ -57,7 +57,6 @@ def get_start_times(lines):
         st = el["startq"]
         st = datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
         start_times[st] += 1
-    print(start_times)
     start_times = sorted(start_times)
 
     return start_times
@@ -65,7 +64,6 @@ def get_start_times(lines):
 def load_data(bucket_name, period_str, delete=True):
     try:
         cp_command = 'aws s3 cp ' + bucket_name + period_str + 'part-00000.gz temp.gz'
-        print(cp_command)
         os.system(cp_command)
         with gzip.open("temp.gz", 'rb') as infile:
 

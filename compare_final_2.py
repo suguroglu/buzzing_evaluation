@@ -8,9 +8,11 @@ import os
 dutc = datetime.datetime.utcnow()
 begin_hour = dutc.strftime("%Y-%m-%d %H:%M:%S")
 def analyze(bdf, pdf, N=None,rank=1):
-
+    
     gr1 = bdf[bdf["rank"] == rank]
     gr2 = pdf[pdf["rank"] == rank]
+    gr1 = gr1.sort_values(by="score",ascending=False)
+    gr2 = gr2.sort_values(by="score",ascending=False)
     if N:
         gr1 = gr1.head(N)
         gr2 = gr2.head(N)
@@ -53,14 +55,14 @@ def main(test_file_loc, baseline_file_loc, output_folder="final_out/"):
 
     top_ten_sites = len(set(bsv[0:10]).intersection(set(asv[0:10]))) * 100 / 10
     stats = analyze(bdf,pdf)
-    # stats_20 = analyze(bdf,pdf,N=20)
-    # stats_100 = analyze(bdf, pdf,N=100)
+    stats_20 = analyze(bdf,pdf,N=20)
+    stats_100 = analyze(bdf, pdf,N=100)
 
     results = {}
     results["top_10_site_aggrement"] = top_ten_sites
     results["all_rank_1_aggrement"] = stats["percentage_common"].iat[0]
-    # results["top_20_aggreement_in_rank_1"] = stats_20["percentage_common"].iat[0]
-    # results["top_100_aggreement_in_rank_1"] = stats_100["percentage_common"].iat[0]
+    results["top_20_aggreement_in_rank_1"] = stats_20["percentage_common"].iat[0]
+    results["top_100_aggreement_in_rank_1"] = stats_100["percentage_common"].iat[0]
     json_str = json.dumps(results)
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
@@ -69,8 +71,10 @@ def main(test_file_loc, baseline_file_loc, output_folder="final_out/"):
     f = open(stats_out_file,"w")
     f.write(json_str)
     f.close()
+    print("Top 20 aggrement {res20}".format(res20=results["top_20_aggreement_in_rank_1"]))
+    print("Top 100 aggrement {res20}".format(res20=results["top_100_aggreement_in_rank_1"]))
     alert= False
-    if float(results['all_rank_1_aggrement']) < 70:
+    if float(results['all_rank_1_aggrement']) < 70 or results["top_20_aggreement_in_rank_1"] < 70:
         alert = True
     return alert, stats_out_file
 
