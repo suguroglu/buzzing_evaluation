@@ -41,15 +41,13 @@ def main():
                     parsely_diff.append((hm - p).seconds / 60)
 
                 p_diff_max = np.max(parsely_diff)
-                alert = False
                 if p_diff_max > 20:
-                    print("ALERT: Delay in data")
-                    alert= True
+                    return "ALERT: {delay} in data".format(delay=p_diff_max)
+                return "OK"
 
-                return alert, p_diff_max
             except:
                 print("CANNOT RETRIEVE DATA FROM {period_str} FROM PARSELY".format(period_str=period_str))
-                return False, -1
+                return "ALERT: Cannot retrieve data"
 
 
 
@@ -82,4 +80,4 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Buzzing Evaluations')
 
     args = parser.parse_args()
-    alert, p_diff_max = main()
+    main()
