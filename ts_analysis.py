@@ -41,7 +41,7 @@ def main():
 
                 p_diff_max = np.max(parsely_diff)
                 if p_diff_max > 20:
-                    return "ALERT: {delay} in data".format(delay=p_diff_max)
+                    return "ALERT: {delay} min delay in incoming data stream".format(delay=p_diff_max)
                 print("OK")
                 return "OK"
 

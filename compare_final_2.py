@@ -7,6 +7,11 @@ common_key = "url_hash"
 import os
 dutc = datetime.datetime.utcnow()
 begin_hour = dutc.strftime("%Y-%m-%d %H:%M:%S")
+from helpers.boto_connector import BotoConnector
+from helpers.redshift_connector import RedshiftConnector
+boto_wrapper = BotoConnector(bucket="hearstdataservices", keypath="suguroglu/metrics/")
+redshift_connector = RedshiftConnector()
+
 def analyze(bdf, pdf, N=None,rank=1):
     
     gr1 = bdf[bdf["rank"] == rank]
@@ -49,6 +54,13 @@ def analyze(bdf, pdf, N=None,rank=1):
 def main(test_file_loc, baseline_file_loc, output_folder="final_out/"):
     bdf = pd.read_json(baseline_file_loc)
     pdf = pd.read_json(test_file_loc)
+    timestamp = dutc.strftime("%Y-%m-%d %H:%M")
+
+    A = pdf.groupby("sitename")["pageviews"].sum().reset_index()
+    A["timestamp"] = timestamp
+    A["sitename"] = A["sitename"].astype(str)
+    boto_wrapper.s3_to_redshift(dataframe=A, table_name="su_metrics_final_output", engine=redshift_connector.engine)
+    
     bsv = bdf["siteid"].value_counts().keys()
     asv = pdf.siteid.value_counts().keys()
 
@@ -89,3 +101,4 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     main(args.test_file, args.baseline)
+

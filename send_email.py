@@ -7,7 +7,7 @@ from ts_analysis import main as ts_analysis_main
 from eval_final import main as eval_final_main
 from i_hits_reconciliation import main as i_hits_main
 from_email = "suguroglu@hearst.com"
-to_email = "suguroglu@hearst.com"
+to_email = "hds-notifications@hearst.com"
 
 
 def send_email(msg_str,title):
@@ -22,13 +22,21 @@ def send_email(msg_str,title):
 delay_alert = ts_analysis_main()
 if "OK" not in delay_alert:
     send_email(delay_alert,"Buzzing Warning: Delay in buzzing kinesis")
-
+else:
+    send_email("OK","Buzzing OK: No delay in kinesis data")
 
 eval_final = eval_final_main()
 if "OK" not in eval_final:
     send_email(eval_final,"CRITICAL: Buzzing reconciliation dropped")
-
-if "OK" not in i_hits_final:
-    send_email(eval_final,"CRITICAL: Buzzing reconciliation dropped")
-
+else:
+    send_email("OK","Buzzing OK: Reconciliation metrics healthy")
+    
 i_hits_final = i_hits_main()
+
+#if "OK" not in i_hits_final:
+#    send_email(i_hits_final,"CRITICAL: Buzzing intermediate file reconcialiation dropped")
+#else:
+#    send_email(i_hits_final, "Buzzing OK: Buzzing intermediate file reconcialiation healthy")
+
+
+

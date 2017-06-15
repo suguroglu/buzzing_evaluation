@@ -8,6 +8,10 @@ from common import load_data
 import argparse
 import os
 
+from helpers.boto_connector import BotoConnector
+boto_wrapper = BotoConnector(bucket="hearstdataservices", keypath="suguroglu/metrics/")
+
+
 site_mappings = {10004: 'greenwichtime.com', 10005: 'dariennewsonline.com', 10006: 'fairfieldcitizenonline.com',
                  10008: 'newcanaannewsonline.com', 10009: 'newmilfordspectrum.com', 10011: 'westport-news.com',
                  10012: 'beaumontenterprise.com', 10013: 'mysanantonio.com', 10014: 'seattlepi.com', 10017: 'wcvb.com',
@@ -192,10 +196,16 @@ def main(output_folder="out/", is_download=True):
                                                                          month=month,
                                                                          day=day,
                                                                          hour=dutc.hour)
-    # parsely_filename ="/Users/suguroglu/Dev/buzzing_evaluation/parsely_2017612_20.txt"
-    # icrossing_filename = "/Users/suguroglu/Dev/buzzing_evaluation/icrossing_2017612_20.txt"
     pdf = load_data_from_bucket(PARSELY_BUCKET, parsely_filename, is_download=is_download)
     idf = load_data_from_bucket(BASELINE_BUCKET, icrossing_filename, is_download=is_download)
+    Apdf = pdf.groupby(["cid", "startq"])["pageviews"].sum().reset_index()
+    Bpdf = idf.groupby(["cid", "startq"])["pageviews"].sum().reset_index()
+    Apdf["stream"] = "parsely"
+    Bpdf["stream"] = "icrossing"
+
+    A = pd.concat([Apdf, Bpdf], axis=0)
+    boto_wrapper.s3_to_redshift(dataframe=A, table_name="su_buzzing_intermediate_metrics", engine=R.engine)
+
     df = load_data_from_ihits()
     num_sites = number_of_sites(pdf)
     parsely_missing_urls = get_missing_urls(df, pdf)
@@ -245,7 +255,8 @@ def main(output_folder="out/", is_download=True):
             stats["sites_missing_only_from_parsely"]) > 10:
         print("ALERT! intermediate buzzing output not ok")
         return "ALERT! intermediate buzzing output not OK"
-
+    os.remove(parsely_filename)
+    os.remove(icrossing_filename)
     print("OK")
     return("OK")
 
