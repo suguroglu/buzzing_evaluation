@@ -16,7 +16,8 @@ env = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__)
 template = env.get_template('email_template.html')
 
 IS_ICROSSING = True
-IS_DEBUG = True
+IS_DEBUG = False
+
 period = "res5"
 
 

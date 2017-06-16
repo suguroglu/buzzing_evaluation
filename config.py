@@ -1,11 +1,10 @@
-table_config = {"eval_final":{"stats_table":"su_buzzing_stats_comparison","pdf_table":"su_metrics_final_output"},"eval_intermediate":{"pdf_table":"su_buzzing_intermediate_metrics"}}
+table_config = {"eval_final":{"stats_table":"su_buzzing_stats_comparison","pdf_table":"su_metrics_final_output"},"eval_intermediate":{"pdf_table":"su_buzzing_intermediate_metrics","i_hits_comparison":"su_buzzing_i_hits_comparison"}}
 PROD_FINAL_OUTPUT_LOC = 's3://hearstkinesisdata/v4/'
 DEV_FINAL_OUTPUT_LOC = "s3://hearstdataservices/buzzing/v4/"
 PROD_INTERMEDIATE_OUTPUT_LOC = 's3://hearstkinesisdata/processedsparkjsonix/'
 DEV_INTERMEDIATE_OUTPUT_LOC = "s3://hearstdataservices/buzzing/parselyjson/"
 
 FINAL_OUTPUT_LOG_FOLDER="final_out/"
-INTERMEDIATE_OUTPUT_FOLDER="out/"
 HITS_TABLE_NAME = "i_hits"
 site_mappings = {10004: 'greenwichtime.com', 10005: 'dariennewsonline.com', 10006: 'fairfieldcitizenonline.com',
                  10008: 'newcanaannewsonline.com', 10009: 'newmilfordspectrum.com', 10011: 'westport-news.com',

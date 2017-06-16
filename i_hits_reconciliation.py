@@ -7,7 +7,7 @@ from helpers.redshift_connector import RedshiftConnector
 from common import load_data
 import argparse
 import os
-from config import table_config, PROD_INTERMEDIATE_OUTPUT_LOC, DEV_INTERMEDIATE_OUTPUT_LOC, site_mappings,HITS_TABLE_NAME,INTERMEDIATE_OUTPUT_FOLDER
+from config import table_config, PROD_INTERMEDIATE_OUTPUT_LOC, DEV_INTERMEDIATE_OUTPUT_LOC, site_mappings,HITS_TABLE_NAME
 from helpers.boto_connector import BotoConnector
 
 boto_wrapper = BotoConnector(bucket="hearstdataservices", keypath="suguroglu/metrics/")
@@ -126,7 +126,7 @@ def get_missing_sites(i_hits_df, pdf):
     common = merged[~merged["cid"].isnull() & ~merged["ic_site_id"].isnull()]
     common["diff"] = common["pageviews"] - common["cv"]
     common["diff_percentage"] = common["diff"] * 100 / common["cv"]
-
+    common.header=["ic_site_id_hits","pageview_hits","ic_site_id_buzzing","pageview_buzzing","diff","diff_percentage"]
     return missing_sites, common
 
 
@@ -158,13 +158,8 @@ def main(is_icrossing=True, is_debug=False,is_download=True):
     parsely_missing_sites, common_parsely = get_missing_sites(df, pdf)
     missing_url_percentage = len(list(parsely_missing_urls.keys())) * 100 / df.shape[0]
 
-    site_percentage_out_file = os.path.join(INTERMEDIATE_OUTPUT_FOLDER, "site_counts_{begin_hour}.txt".format(begin_hour=begin_hour))
-    i_hits_comparison_file = os.path.join(INTERMEDIATE_OUTPUT_FOLDER, "i_hits_{begin_hour}.txt".format(begin_hour=begin_hour))
-
-    calculate_site_percentages(pdf, site_percentage_out_file)
 
     different_sites = list(common_parsely[abs(common_parsely["diff_percentage"]) > PERCENTAGE_THRESHOLD]["ic_site_id"])
-    common_parsely.to_csv(i_hits_comparison_file, sep="\t")
 
     high_percentage_sites = []
     for el in different_sites:
@@ -193,10 +188,6 @@ def main(is_icrossing=True, is_debug=False,is_download=True):
         icrossing_missing_sites, common_icrossing = get_missing_sites(df, idf)
         all = pd.merge(common_icrossing, common_parsely, how="outer", on="ic_site_id")
         summary = all[(abs(all["diff_percentage_y"]) > 2 * abs(all["diff_percentage_x"]))]
-        badly_performing_site_out_file = os.path.join(INTERMEDIATE_OUTPUT_FOLDER,
-                                                      "bad_performing_{begin_hour}.txt".format(begin_hour=begin_hour))
-
-        summary.to_csv(badly_performing_site_out_file, sep="\t")
         bad_performing_sites = [map_to_sites(x) for x in list(summary["ic_site_id"])]
         stats["bad_performing_sites"] = bad_performing_sites
         stats["sites_missing_only_from_parsely"] = list(parsely_missing_sites.difference(icrossing_missing_sites))
@@ -205,6 +196,8 @@ def main(is_icrossing=True, is_debug=False,is_download=True):
 
     if not is_debug:
         boto_wrapper.s3_to_redshift(dataframe=A, table_name=table_config["eval_intermediate"]["pdf_table"],
+                                    engine=R.engine)
+        boto_wrapper.s3_to_redshift(dataframe=common_parsely, table_name=table_config["eval_intermediate"]["i_hits_comparison"],
                                     engine=R.engine)
 
     if stats['Number_of_sites'] < 50 or len(stats["bad_performing_sites"]) > 10 or len(
@@ -221,7 +214,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--is_download', dest="is_download", type=bool, default=True)
     parser.add_argument('--is_icrossing', dest="is_icrossing", type=bool, default=True)
-    parser.add_argument('--is_debug', dest="is_debug", type=bool, default=False)
+    parser.add_argument('--is_debug', dest="is_debug", type=bool, default=True)
 
     args = parser.parse_args()
     main(args.is_icrossing, args.is_debug, args.is_download)
