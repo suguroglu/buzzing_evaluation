@@ -54,5 +54,11 @@ if IS_ICROSSING:
         send_email("Buzzing OK: Reconciliation metrics healthy", msg_str, IS_DEBUG)
 
 
-i_hits_final = i_hits_main(IS_ICROSSING,IS_DEBUG)
+i_hits_flag, results = i_hits_main(IS_ICROSSING,IS_DEBUG)
+
+if "OK" not in i_hits_flag:
+    send_email("CRITICAL: Buzzing reconciliation with i_hits dropped", results, IS_DEBUG)
+else:
+    send_email("Buzzing OK: Reconciliation metrics with i_hits healthy", results, IS_DEBUG)
+
 

@@ -53,3 +53,11 @@ site_mappings = {10004: 'greenwichtime.com', 10005: 'dariennewsonline.com', 1000
                  2109: 'harpersbazaar.es', 2111: 'sellittexas.com', 2112: 'yourconroenews.com',
                  2114: 'townandcountrymag.co.uk', 2115: 'khtvnews.com', 4: 'sfgate.com', 5: 'stamfordadvocate.com',
                  6: 'ctpost.com', 7: 'chron.com', 8: 'newstimes.com', 9: 'timesunion.com'}
+
+
+
+LIMIT = 1000
+EPSILON = 40
+
+SITE_THRESHOLD = 50
+PERCENTAGE_THRESHOLD = 30

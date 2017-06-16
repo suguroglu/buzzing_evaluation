@@ -7,19 +7,14 @@ from helpers.redshift_connector import RedshiftConnector
 from common import load_data
 import argparse
 import os
-from config import table_config, PROD_INTERMEDIATE_OUTPUT_LOC, DEV_INTERMEDIATE_OUTPUT_LOC, site_mappings,HITS_TABLE_NAME
+from config import table_config, PROD_INTERMEDIATE_OUTPUT_LOC, DEV_INTERMEDIATE_OUTPUT_LOC, site_mappings, \
+    HITS_TABLE_NAME, LIMIT, EPSILON, SITE_THRESHOLD, PERCENTAGE_THRESHOLD
 from helpers.boto_connector import BotoConnector
 
 boto_wrapper = BotoConnector(bucket="hearstdataservices", keypath="suguroglu/metrics/")
 
 minutes_range = ["15", "30", "45", "60"]
 buckets_range = [["05", "10", "15"], ["20", "25", "30"], ["35", "40", "45"], ["50", "55", "60"]]
-
-LIMIT = 1000
-EPSILON = 40
-
-SITE_THRESHOLD = 50
-PERCENTAGE_THRESHOLD = 30
 
 R = RedshiftConnector()
 dutc = datetime.datetime.utcnow() - datetime.timedelta(hours=2)  # process data from an hour ago
@@ -126,7 +121,8 @@ def get_missing_sites(i_hits_df, pdf):
     common = merged[~merged["cid"].isnull() & ~merged["ic_site_id"].isnull()]
     common["diff"] = common["pageviews"] - common["cv"]
     common["diff_percentage"] = common["diff"] * 100 / common["cv"]
-    common.header=["ic_site_id_hits","pageview_hits","ic_site_id_buzzing","pageview_buzzing","diff","diff_percentage"]
+    common.header = ["ic_site_id_hits", "pageview_hits", "ic_site_id_buzzing", "pageview_buzzing", "diff",
+                     "diff_percentage"]
     return missing_sites, common
 
 
@@ -137,7 +133,7 @@ def map_to_sites(ic_site_id):
         return ""
 
 
-def main(is_icrossing=True, is_debug=False,is_download=True):
+def main(is_icrossing=True, is_debug=False, is_download=True):
     month = '{:02d}'.format(dutc.month)
     day = '{:02d}'.format(dutc.day)
 
@@ -145,7 +141,7 @@ def main(is_icrossing=True, is_debug=False,is_download=True):
                                                                        day=day,
                                                                        hour=dutc.hour)
     pdf = load_data_from_bucket(DEV_INTERMEDIATE_OUTPUT_LOC, parsely_filename, is_download=is_download)
-    os.remove(parsely_filename) #cleanup
+    os.remove(parsely_filename)  # cleanup
 
     Apdf = pdf.groupby(["cid", "startq"])["pageviews"].sum().reset_index()
     Apdf["stream"] = "parsely"
@@ -157,7 +153,6 @@ def main(is_icrossing=True, is_debug=False,is_download=True):
 
     parsely_missing_sites, common_parsely = get_missing_sites(df, pdf)
     missing_url_percentage = len(list(parsely_missing_urls.keys())) * 100 / df.shape[0]
-
 
     different_sites = list(common_parsely[abs(common_parsely["diff_percentage"]) > PERCENTAGE_THRESHOLD]["ic_site_id"])
 
@@ -197,16 +192,18 @@ def main(is_icrossing=True, is_debug=False,is_download=True):
     if not is_debug:
         boto_wrapper.s3_to_redshift(dataframe=A, table_name=table_config["eval_intermediate"]["pdf_table"],
                                     engine=R.engine)
-        boto_wrapper.s3_to_redshift(dataframe=common_parsely, table_name=table_config["eval_intermediate"]["i_hits_comparison"],
+        boto_wrapper.s3_to_redshift(dataframe=common_parsely,
+                                    table_name=table_config["eval_intermediate"]["i_hits_comparison"],
                                     engine=R.engine)
-
-    if stats['Number_of_sites'] < 50 or len(stats["bad_performing_sites"]) > 10 or len(
-            stats["sites_missing_only_from_parsely"]) > 10:
+    stats_str = json.dumps(stats)
+    if stats['Number_of_sites'] < SITE_THRESHOLD or len(stats["bad_performing_sites"]) > 10 or len(
+            stats["sites_missing_only_from_parsely"]) > 10 or len(
+        stats["Site_names_with_highest_difference_from_ihits"]) > 20:
         print("ALERT! intermediate buzzing output not ok")
-        return "ALERT! intermediate buzzing output not OK"
+        return "ALERT! intermediate buzzing output not OK", stats_str
 
     print("OK")
-    return ("OK")
+    return "OK", stats_str
 
 
 if __name__ == "__main__":
@@ -214,7 +211,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--is_download', dest="is_download", type=bool, default=True)
     parser.add_argument('--is_icrossing', dest="is_icrossing", type=bool, default=True)
-    parser.add_argument('--is_debug', dest="is_debug", type=bool, default=True)
+    parser.add_argument('--is_debug', dest="is_debug", type=bool, default=False)
 
     args = parser.parse_args()
     main(args.is_icrossing, args.is_debug, args.is_download)
