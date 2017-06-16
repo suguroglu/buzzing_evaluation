@@ -32,10 +32,10 @@ def send_email(title_str, msg_str, is_debug):
     msg['Subject'] = title_str
     msg['From'] = from_email
     msg['To'] = to_email
-    # s = smtplib.SMTP("localhost")
-    # if not is_debug:
-    #    s.sendmail(from_email, [to_email], msg.as_string())
-    # s.quit()
+    s = smtplib.SMTP("localhost")
+    if not is_debug:
+       s.sendmail(from_email, [to_email], msg.as_string())
+    s.quit()
 
 
 delay_alert = ts_analysis_main()
@@ -45,13 +45,13 @@ if "OK" not in delay_alert:
 else:
     send_email("Buzzing OK: No delay in kinesis data", "", IS_DEBUG)
 
-
-i_hits_final = i_hits_main(IS_ICROSSING,IS_DEBUG)
-
-
 if IS_ICROSSING:
     eval_final, msg_str = eval_final_main(period, IS_DEBUG)
     if "OK" not in eval_final:
         send_email("CRITICAL: Buzzing reconciliation dropped", msg_str, IS_DEBUG)
     else:
         send_email("Buzzing OK: Reconciliation metrics healthy", msg_str, IS_DEBUG)
+
+
+i_hits_final = i_hits_main(IS_ICROSSING,IS_DEBUG)
+
