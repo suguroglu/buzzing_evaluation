@@ -5,17 +5,14 @@ import gzip
 import numpy as np
 from collections import defaultdict
 import json
-
+from config import DEV_INTERMEDIATE_OUTPUT_LOC
 
 PROCESS_BASELINE = True
-PARSELY_BUCKET = "s3://hearstdataservices/buzzing/parselyjson/"
-#BASELINE_BUCKET='s3://hearstkinesisdata/processedsparkjsonix/'
+
+
 
 dt = datetime.datetime.utcnow()
 prev_hour = dt - datetime.timedelta(hours=1)
-
-#minutes_range = ["15","30","45","60"]
-#buckets_range = [["05","10","15"],["20","25","30"],["35","40","45"],["50","55","60"]]
 
 def main():
     hour = '{:02d}'.format(prev_hour.hour)
@@ -32,7 +29,7 @@ def main():
             hm = datetime.datetime.strptime(hm_str, "%H:%M")
 
             try:
-                test_lines = load_data(PARSELY_BUCKET, period_str, delete=True)
+                test_lines = load_data(DEV_INTERMEDIATE_OUTPUT_LOC, period_str, delete=True)
                 parsely_start_times = get_start_times(test_lines)
 
                 parsely_diff = []

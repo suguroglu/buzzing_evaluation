@@ -1,28 +1,23 @@
 #!/usr/bin/python3
-import datetime
-import tarfile
 import argparse
-import os, sys
+import datetime
+import os
 import shutil
-# from compare_final_output import main
-from compare_final_2 import main as compare
-import smtplib
+import tarfile
+from config import PROD_FINAL_OUTPUT_LOC, DEV_FINAL_OUTPUT_LOC
+from compare_final_outputs import compare
 
 # Import the email modules we'll need
-from email.mime.text import MIMEText
 
-from print_evaluation_results import print_evaluation_results, print_graphite_command
 
-BASELINE_BUCKET = 's3://hearstkinesisdata/v4/'
-NEW_BUCKET = "s3://hearstdataservices/buzzing/v4/"
 cpath = os.path.dirname(os.path.realpath(__file__))
 
 
-def main(period="res5", save=False):
+def main(period, is_debug, save=False):
     print("Downloading icrossing data")
-    os.system('aws s3 cp ' + BASELINE_BUCKET + 'mediaos_json_files.tar.gz baseline_mediaos.tar.gz')
+    os.system('aws s3 cp ' + PROD_FINAL_OUTPUT_LOC + 'mediaos_json_files.tar.gz baseline_mediaos.tar.gz')
     print("Downloading parsely data")
-    os.system('aws s3 cp ' + NEW_BUCKET + 'mediaos_json_files.tar.gz new_mediaos.tar.gz')
+    os.system('aws s3 cp ' + DEV_FINAL_OUTPUT_LOC + 'mediaos_json_files.tar.gz new_mediaos.tar.gz')
     dt = datetime.datetime.utcnow()
     dt = dt.strftime("%Y-%m-%d_%H:%M")
 
@@ -47,7 +42,7 @@ def main(period="res5", save=False):
     baseline_file = os.path.join(baseline_output_folder, period + '.json')
     print("Test file: {test_file}".format(test_file=test_file))
     print("Baseline file: {baseline_file}".format(baseline_file=baseline_file))
-    alert, stats_out_file = compare(test_file, baseline_file)
+    alert, stats_str = compare(test_file, baseline_file, period, is_debug)
 
     if not save:
         os.remove("baseline_mediaos.tar.gz")
@@ -57,24 +52,15 @@ def main(period="res5", save=False):
 
     if alert:
         print("ALERT: Reconciliation dropped")
-        return "ALERT: Reconciliation dropped"
+        return "ALERT: Reconciliation dropped", stats_str
 
-    return "OK"
-
-    # f = open("buzzing_"+str(dt)+".txt","w")
-    # orig_stdout = sys.stdout
-    # sys.stdout = f
-    # print_evaluation_results(ev)
-    # sys.stdout = orig_stdout
-    # f.close()
-    #
-    # print_graphite_command(ev)
+    return "OK", stats_str
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Buzzing Evaluations')
 
     parser.add_argument('--period', dest='period', type=str, default='res5')
-
+    parser.add_argument('--is_debug', dest='debug', type=bool, default=False)
     args = parser.parse_args()
-    main(args.period)
+    main(args.period, args.is_debug)
