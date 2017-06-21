@@ -45,11 +45,11 @@ def run_delay_report(is_debug):
 def run_i_hits_comparison(is_icrossing, is_debug):
 
     i_hits_flag, results = i_hits_main(is_icrossing,is_debug)
-
-    if "OK" not in i_hits_flag:
-        send_email("CRITICAL: Buzzing reconciliation with i_hits dropped", results, is_debug)
-    else:
-        send_email("Buzzing OK: Reconciliation metrics with i_hits healthy", results, is_debug)
+    #
+    # if "OK" not in i_hits_flag:
+    #     send_email("CRITICAL: Buzzing reconciliation with i_hits dropped", results, is_debug)
+    # else:
+    #     send_email("Buzzing OK: Reconciliation metrics with i_hits healthy", results, is_debug)
 
 
 def main(period, is_debug, is_icrossing):
