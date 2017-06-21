@@ -69,9 +69,9 @@ def run_icrossing_comparison(period, is_debug, is_icrossing):
         return
     eval_final, msg_str = eval_final_main(period, is_debug)
     if "OK" not in eval_final:
-        send_email("CRITICAL: Buzzing reconciliation dropped", msg_str, is_debug)
+        send_email("CRITICAL: Buzzing reconciliation dropped for period {period}".format(period=period), msg_str, is_debug)
     else:
-        send_email("Buzzing OK: Reconciliation metrics healthy", msg_str, is_debug)
+        send_email("Buzzing OK: Reconciliation metrics healthy for period {period}".format(period=period), msg_str, is_debug)
 
 
 
