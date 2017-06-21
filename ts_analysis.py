@@ -38,7 +38,7 @@ def main():
 
                 p_diff_max = np.max(parsely_diff)
 
-                max_diff = json.dumps({"maximum difference in timestamps":"%2.f seconds" %p_diff_max})
+                max_diff = {"maximum difference in timestamps":"%2.f seconds" %p_diff_max}
                 if p_diff_max > 20:
                     return "ALERT: {delay} min delay in incoming data stream".format(delay=p_diff_max), max_diff
                 print("OK")

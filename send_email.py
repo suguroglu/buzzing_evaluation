@@ -17,11 +17,11 @@ template = env.get_template('email_template.html')
 
 
 
-def send_email(title_str, msg_str, is_debug):
+def send_email(title_str, msg_dict, is_debug):
     msg = MIMEMultipart('alternative')
 
-    if msg_str:
-        msg_dict = json.loads(msg_str)
+    if msg_dict:
+
         rendered_email = template.render(results=msg_dict, title=title_str)
         part2 = MIMEText(rendered_email, 'html')
         msg.attach(part2)

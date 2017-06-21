@@ -195,15 +195,15 @@ def main(is_icrossing=True, is_debug=False, is_download=True):
         boto_wrapper.s3_to_redshift(dataframe=common_parsely,
                                     table_name=table_config["eval_intermediate"]["i_hits_comparison"],
                                     engine=R.engine)
-    stats_str = json.dumps(stats)
-    print(stats_str)
+
+
     if stats['Number_of_sites'] < SITE_THRESHOLD or len(stats["bad_performing_sites"]) > 10 or len(
             stats["sites_missing_only_from_parsely"]) > 10:
         print("ALERT! intermediate buzzing output not ok")
-        return "ALERT! intermediate buzzing output not OK", stats_str
+        return "ALERT! intermediate buzzing output not OK", stats
 
     print("OK")
-    return "OK", stats_str
+    return "OK", stats
 
 
 if __name__ == "__main__":

@@ -83,7 +83,7 @@ def compare(test_file_loc, baseline_file_loc, period, is_debug):
     results["Rank 1 URL Aggrement Percentage"] = "%.2f" % stats["percentage_common"].iat[0]
     results["Top 20 URLs in Rank 1 Agreement Percentage"] = "%.2f" % stats_20["percentage_common"].iat[0]
     results["Top 100 URLs in Rank 1 Agreement Percentage"] = "%.2f" % stats_100["percentage_common"].iat[0]
-    json_str = json.dumps(results)
+
 
     if not os.path.exists(FINAL_OUTPUT_LOG_FOLDER):
         os.makedirs(FINAL_OUTPUT_LOG_FOLDER)
@@ -107,4 +107,4 @@ def compare(test_file_loc, baseline_file_loc, period, is_debug):
         boto_wrapper.s3_to_redshift(dataframe=A, table_name=table_config["eval_final"]["pdf_table"] + suffix,
                                     engine=redshift_connector.engine)
 
-    return alert, json_str
+    return alert, results
