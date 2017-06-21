@@ -61,6 +61,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Buzzing Evaluations')
 
     parser.add_argument('--period', dest='period', type=str, default='res5')
-    parser.add_argument('--is_debug', dest='debug', type=bool, default=False)
+    parser.add_argument('--is_debug', dest='is_debug', type=bool, default=True)
     args = parser.parse_args()
     main(args.period, args.is_debug)

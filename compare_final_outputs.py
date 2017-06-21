@@ -36,6 +36,7 @@ def analyze(bdf, pdf, N=None, rank=1):
 
         if el == "url":
             continue
+
         el_x = el + "_x"
         el_y = el + "_y"
         if merged[el_x].dtype == object:
@@ -45,6 +46,7 @@ def analyze(bdf, pdf, N=None, rank=1):
         else:
             a = (merged[el_x] - merged[el_y]) / merged[el_x]
             diff = a.mean()
+
         stats[el] = diff
     stats = pd.DataFrame(stats, index=[0])
     stats["percentage_common"] = percentage_common
@@ -95,7 +97,10 @@ def compare(test_file_loc, baseline_file_loc, period, is_debug):
         alert = True
 
     if not is_debug:
-        print("Writing to redshift")
+        print(
+            "Writing to redshift: {table1}, {table2}".format(table1=table_config["eval_final"]["stats_table"] + suffix,
+                                                             table2=table_config["eval_final"]["pdf_table"] + suffix))
+
         boto_wrapper.s3_to_redshift(dataframe=stats, table_name=table_config["eval_final"]["stats_table"] + suffix,
                                     engine=redshift_connector.engine)
 
