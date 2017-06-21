@@ -9,8 +9,8 @@ from eval_final import main as eval_final_main
 from i_hits_reconciliation import main as i_hits_main
 import argparse
 from_email = "suguroglu@hearst.com"
-#to_email = "hds-notifications@hearst.com"
-to_email = "suguroglu@hearst.com"
+to_email = "hds-notifications@hearst.com"
+#to_email = "suguroglu@hearst.com"
 
 env = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 template = env.get_template('email_template.html')
@@ -38,13 +38,14 @@ def run_delay_report(is_debug):
     delay_alert, p_diff_max = ts_analysis_main()
     if "OK" not in delay_alert:
         send_email("Buzzing Warning: Delay in buzzing kinesis", p_diff_max, is_debug)
-    else:
-        send_email("Buzzing OK: No delay in kinesis data", p_diff_max, is_debug)
+    # else:
+    #     send_email("Buzzing OK: No delay in kinesis data", p_diff_max, is_debug)
 
 
 def run_i_hits_comparison(is_icrossing, is_debug):
 
     i_hits_flag, results = i_hits_main(is_icrossing,is_debug)
+
     #
     # if "OK" not in i_hits_flag:
     #     send_email("CRITICAL: Buzzing reconciliation with i_hits dropped", results, is_debug)
@@ -70,15 +71,15 @@ def run_icrossing_comparison(period, is_debug, is_icrossing):
     eval_final, msg_str = eval_final_main(period, is_debug)
     if "OK" not in eval_final:
         send_email("CRITICAL: Buzzing reconciliation dropped for period {period}".format(period=period), msg_str, is_debug)
-    else:
-        send_email("Buzzing OK: Reconciliation metrics healthy for period {period}".format(period=period), msg_str, is_debug)
+    # else:
+    #     send_email("Buzzing OK: Reconciliation metrics healthy for period {period}".format(period=period), msg_str, is_debug)
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Buzzing Evaluations')
 
-    parser.add_argument('--period', dest='period', type=str, default='res5')
+    parser.add_argument('--period', dest='period', type=str, default='res5,res120,res840')
     parser.add_argument('--is_debug', dest='is_debug', type=bool, default=False)
     parser.add_argument('--is_icrossing', dest='is_icrossing', type=bool, default=True)
 
