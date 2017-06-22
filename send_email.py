@@ -9,8 +9,8 @@ from eval_final import main as eval_final_main
 from i_hits_reconciliation import main as i_hits_main
 import argparse
 from_email = "suguroglu@hearst.com"
-to_email = "hds-notifications@hearst.com"
-#to_email = "suguroglu@hearst.com"
+#to_email = "hds-notifications@hearst.com"
+to_email = "suguroglu@hearst.com"
 
 env = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 template = env.get_template('email_template.html')
