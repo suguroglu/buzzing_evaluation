@@ -46,7 +46,7 @@ def main():
 
             except:
                 print("CANNOT RETRIEVE DATA FROM {period_str} FROM PARSELY".format(period_str=period_str))
-                return "ALERT: Cannot retrieve data"
+                return "ALERT: Cannot retrieve data", {}
 
 
 

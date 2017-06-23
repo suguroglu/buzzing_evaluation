@@ -12,6 +12,10 @@ from_email = "suguroglu@hearst.com"
 to_email = "hds-notifications@hearst.com"
 #to_email = "suguroglu@hearst.com"
 
+import datetime
+dutc = datetime.datetime.utcnow()
+begin_hour = dutc.strftime("%Y-%m-%d %H:%M:%S")
+
 env = Environment(loader=FileSystemLoader(os.path.join(os.path.dirname(__file__), 'templates')))
 template = env.get_template('email_template.html')
 
@@ -54,6 +58,7 @@ def run_i_hits_comparison(is_icrossing, is_debug):
 
 
 def main(period, is_debug, is_icrossing):
+    print("RUNNING FOR {date}".format(date=begin_hour))
     if "," in period:
         periods = period.split(",")
         for p in periods:

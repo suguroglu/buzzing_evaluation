@@ -42,7 +42,7 @@ def main(period, is_debug, save=False):
     baseline_file = os.path.join(baseline_output_folder, period + '.json')
     print("Test file: {test_file}".format(test_file=test_file))
     print("Baseline file: {baseline_file}".format(baseline_file=baseline_file))
-    alert, stats_str = compare(test_file, baseline_file, period, is_debug)
+    alert, stats_dict = compare(test_file, baseline_file, period, is_debug)
 
     if not save:
         os.remove("baseline_mediaos.tar.gz")
@@ -51,10 +51,14 @@ def main(period, is_debug, save=False):
         shutil.rmtree(parsely_output_folder)
 
     if alert:
-        print("ALERT: Reconciliation dropped")
-        return "ALERT: Reconciliation dropped", stats_str
+        if type(stats_dict)==dict:
 
-    return "OK", stats_str
+            print("ALERT: Reconciliation dropped")
+            return "ALERT: Reconciliation dropped", stats_dict
+        else:
+            return "ALERT: {alert_info}".format(alert_info=stats_dict),{}
+
+    return "OK", stats_dict
 
 
 if __name__ == "__main__":

@@ -56,6 +56,7 @@ def analyze(bdf, pdf, N=None, rank=1):
 
 
 def compare(test_file_loc, baseline_file_loc, period, is_debug):
+    print(begin_hour)
     if period == "res5":
         suffix = ""
     else:
@@ -63,6 +64,20 @@ def compare(test_file_loc, baseline_file_loc, period, is_debug):
 
     bdf = pd.read_json(baseline_file_loc)
     pdf = pd.read_json(test_file_loc)
+    try:
+        timestamps = list(pdf["dslastupdated"].unique())
+        if len(timestamps) < 1:
+            return False, "NO DATA IN HERE"
+
+        dslast = datetime.datetime.utcfromtimestamp(int(timestamps[0]))
+        print(dslast)
+        print(dutc.hour)
+        if dslast.day < dutc.day or dslast.hour < dutc.hour:
+            print("ALERRT dslastupdated old")
+            return True, "DSLASTUPDATED IS OLD"
+    except:
+        return True, "UNKNOWN EXCEPTION"
+
     pdf["stream"] = "parsely"
     bdf["stream"] = "icrossing"
     A = pd.concat([bdf, pdf], axis=0)
@@ -101,6 +116,8 @@ def compare(test_file_loc, baseline_file_loc, period, is_debug):
             "Writing to redshift: {table1}, {table2}".format(table1=table_config["eval_final"]["stats_table"] + suffix,
                                                              table2=table_config["eval_final"]["pdf_table"] + suffix))
 
+
+        #su_buzzing_stats_comparison
         boto_wrapper.s3_to_redshift(dataframe=stats, table_name=table_config["eval_final"]["stats_table"] + suffix,
                                     engine=redshift_connector.engine)
 
