@@ -24,7 +24,6 @@ def load_data_new(bucket_name, period_str, delete=True):
     return results
 
 
-
 def recurse_path(cp,results):
     if not os.path.isfile(cp):
         files = os.listdir(cp)
@@ -35,8 +34,6 @@ def recurse_path(cp,results):
     else:
         if "part-00000.gz" in cp:
             with gzip.open(cp, 'rb') as infile:
-
-                test_lines = [json.loads(el) for el in infile.readlines()]
-                results.append(test_lines)
+                results += [el.decode("utf-8") for el in  infile.readlines()]
 
 

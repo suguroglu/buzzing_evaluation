@@ -33,18 +33,21 @@ def main():
                 parsely_start_times = get_start_times(test_lines)
 
                 parsely_diff = []
-                for p in parsely_start_times:
+                for p in parsely_start_times.keys():
                     parsely_diff.append((hm - p).seconds / 60)
 
                 p_diff_max = np.max(parsely_diff)
+                A = dict((datetime.datetime.strftime(key,"%Y-%m-%d %H:%M:%S"), value) for (key, value) in parsely_start_times.items())
 
-                max_diff = {"maximum difference in timestamps":"%2.f minutes" %p_diff_max}
+                A["maximum difference in timestamps:"]="%.2f minutes"%p_diff_max
+                print(A)
                 if p_diff_max > 20:
-                    return "ALERT: {delay} min delay in incoming data stream".format(delay=p_diff_max), max_diff
+                    return "ALERT: {delay} min delay in incoming data stream".format(delay=p_diff_max), A
                 print("OK")
-                return "OK", max_diff
+                return "OK", A
 
-            except:
+            except Exception as e:
+                print(e.args)
                 print("CANNOT RETRIEVE DATA FROM {period_str} FROM PARSELY".format(period_str=period_str))
                 return "ALERT: Cannot retrieve data", {}
 
@@ -56,7 +59,7 @@ def get_start_times(lines):
         st = el["startq"]
         st = datetime.datetime.strptime(st, "%Y-%m-%d %H:%M:%S")
         start_times[st] += 1
-    start_times = sorted(start_times)
+    #start_times = sorted(start_times)
 
     return start_times
 

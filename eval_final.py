@@ -18,11 +18,9 @@ def main(period, is_debug, save=False):
     os.system('aws s3 cp ' + PROD_FINAL_OUTPUT_LOC + 'mediaos_json_files.tar.gz baseline_mediaos.tar.gz')
     print("Downloading parsely data")
     os.system('aws s3 cp ' + DEV_FINAL_OUTPUT_LOC + 'mediaos_json_files.tar.gz new_mediaos.tar.gz')
-    dt = datetime.datetime.utcnow()
-    dt = dt.strftime("%Y-%m-%d_%H:%M")
 
-    baseline_output_folder = os.path.realpath(os.path.join(cpath, "data/final/" + dt + "/icrossing"))
-    parsely_output_folder = os.path.realpath(os.path.join(cpath, "data/final/" + dt + "/parsely"))
+    baseline_output_folder = os.path.realpath(os.path.join(cpath, "data/final/icrossing"))
+    parsely_output_folder = os.path.realpath(os.path.join(cpath, "data/final/parsely"))
 
     if not os.path.exists(baseline_output_folder):
         os.makedirs(baseline_output_folder)

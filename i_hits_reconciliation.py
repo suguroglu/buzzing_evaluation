@@ -4,7 +4,7 @@ from urllib import parse
 import datetime
 import re
 from helpers.redshift_connector import RedshiftConnector
-from common import load_data
+from common import load_data_new
 import argparse
 import os
 from config import table_config, PROD_INTERMEDIATE_OUTPUT_LOC, DEV_INTERMEDIATE_OUTPUT_LOC, site_mappings, \
@@ -51,7 +51,10 @@ def load_data_from_ihits():
 
 def load_data_from_bucket(bucket_name, filename, is_download=True):
     if is_download:
-        concat_a_day(bucket_name, filename)
+        try:
+            concat_a_day(bucket_name, filename)
+        except Exception as e:
+            raise Exception(e.args)
     pdf = pd.read_json(filename)
     pdfs = pdf[(pdf["startq"] >= begin_hour) & (pdf["startq"] < end_hour)]
     return pdfs
@@ -72,22 +75,17 @@ def is_art_check(url):
 def concat_a_day(bucket_name, filename):
     month = '{:02d}'.format(dutc.month)
     day = '{:02d}'.format(dutc.day)
-    all_lines = []
-    for h in range(dutc.hour, dutc.hour + 2):
-        print(h)
-        if (h == (dutc.hour + 1)) and (int(min) > 30):
-            break
-        for i, min in enumerate(minutes_range):
-            for buc in buckets_range[i]:
-                hour = '{:02d}'.format(h)
-                period_str = "{year}/{month}/{day}/{hour}/{minute}/{bucket}/".format(year=dutc.year, month=month,
-                                                                                     day=day, hour=hour, minute=min,
-                                                                                     bucket=buc)
-                test_lines = load_data(bucket_name, period_str, delete=True)
-                all_lines += test_lines
 
+    period_str = "{year}/{month}/{day}/{hour}".format(year=dutc.year, month=month,
+                                                                         day=day, hour=dutc.hour)
+
+
+    all_lines = load_data_new(bucket_name, period_str, delete=True)
+    all_lines_json = [json.loads(el) for el in all_lines]
+    if not all_lines:
+        raise Exception("EMPTY BUCKET for period: {period}".format(period=period_str))
     f = open(filename, "w")
-    f.write(json.dumps(all_lines))
+    f.write(json.dumps(all_lines_json))
     f.close()
 
 
@@ -140,7 +138,13 @@ def main(is_icrossing=True, is_debug=False, is_download=True):
     parsely_filename = "{prefix}_{year}{month}{day}_{hour}.txt".format(prefix="parsely", year=dutc.year, month=month,
                                                                        day=day,
                                                                        hour=dutc.hour)
-    pdf = load_data_from_bucket(DEV_INTERMEDIATE_OUTPUT_LOC, parsely_filename, is_download=is_download)
+    try:
+        pdf = load_data_from_bucket(DEV_INTERMEDIATE_OUTPUT_LOC, parsely_filename, is_download=is_download)
+    except Exception as e:
+        exception = {"message": e.args}
+        print(exception)
+        return "ALERT! intermediate buzzing output not OK", exception
+
     os.remove(parsely_filename)  # cleanup
 
     Apdf = pdf.groupby(["cid", "startq"])["pageviews"].sum().reset_index()
@@ -211,7 +215,7 @@ if __name__ == "__main__":
 
     parser.add_argument('--is_download', dest="is_download", type=bool, default=True)
     parser.add_argument('--is_icrossing', dest="is_icrossing", type=bool, default=True)
-    parser.add_argument('--is_debug', dest="is_debug", type=bool, default=False)
+    parser.add_argument('--is_debug', dest="is_debug", type=bool, default=True)
 
     args = parser.parse_args()
     main(args.is_icrossing, args.is_debug, args.is_download)
