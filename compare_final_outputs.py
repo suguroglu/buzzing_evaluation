@@ -73,7 +73,7 @@ def compare(test_file_loc, baseline_file_loc, period, is_debug):
         print(dslast)
         print(dutc.hour)
         if dslast.day < dutc.day or dslast.hour < dutc.hour:
-            print("ALERRT dslastupdated old")
+            print("ALERT dslastupdated old")
             return True, "DSLASTUPDATED IS OLD"
     except:
         return True, "UNKNOWN EXCEPTION"
@@ -91,7 +91,9 @@ def compare(test_file_loc, baseline_file_loc, period, is_debug):
     stats = analyze(bdf, pdf)
     stats["time"] = timestamp
     stats_20 = analyze(bdf, pdf, N=20)
+
     stats_100 = analyze(bdf, pdf, N=100)
+    stats_100["time"] = timestamp
 
     results = {}
     results["Top 10 sites Percentage"] = "%.2f" % top_ten_sites
@@ -119,6 +121,9 @@ def compare(test_file_loc, baseline_file_loc, period, is_debug):
 
         #su_buzzing_stats_comparison
         boto_wrapper.s3_to_redshift(dataframe=stats, table_name=table_config["eval_final"]["stats_table"] + suffix,
+                                    engine=redshift_connector.engine)
+
+        boto_wrapper.s3_to_redshift(dataframe=stats_100, table_name=table_config["eval_final"]["stats_table_100"] + suffix,
                                     engine=redshift_connector.engine)
 
         boto_wrapper.s3_to_redshift(dataframe=A, table_name=table_config["eval_final"]["pdf_table"] + suffix,

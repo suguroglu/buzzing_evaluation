@@ -56,8 +56,7 @@ def load_data_from_bucket(bucket_name, filename, is_download=True):
         except Exception as e:
             raise Exception(e.args)
     pdf = pd.read_json(filename)
-    pdfs = pdf[(pdf["startq"] >= begin_hour) & (pdf["startq"] < end_hour)]
-    return pdfs
+    return pdf
 
 
 def number_of_sites(pdf):
@@ -75,9 +74,9 @@ def is_art_check(url):
 def concat_a_day(bucket_name, filename):
     month = '{:02d}'.format(dutc.month)
     day = '{:02d}'.format(dutc.day)
-
+    hour = '{:02d}'.format(dutc.hour)
     period_str = "{year}/{month}/{day}/{hour}".format(year=dutc.year, month=month,
-                                                                         day=day, hour=dutc.hour)
+                                                                         day=day, hour=hour)
 
 
     all_lines = load_data_new(bucket_name, period_str, delete=True)
@@ -170,7 +169,8 @@ def main(is_icrossing=True, is_debug=False, is_download=True):
     stats["Site_names_with_highest_difference_from_ihits"] = high_percentage_sites
     stats["bad_performing_sites"] = []
     stats["sites_missing_only_from_parsely"] = []
-
+    pdf["stream"] = "parsely"
+    B = pdf
     if is_icrossing:
         icrossing_filename = "{prefix}_{year}{month}{day}_{hour}.txt".format(prefix="icrossing", year=dutc.year,
                                                                              month=month,
@@ -192,13 +192,17 @@ def main(is_icrossing=True, is_debug=False, is_download=True):
         stats["sites_missing_only_from_parsely"] = list(parsely_missing_sites.difference(icrossing_missing_sites))
         stats["sitenames_missing_only_from_parsely"] = [map_to_sites(x) for x in
                                                         stats["sites_missing_only_from_parsely"]]
-
+        idf["stream"] = "icrossing"
+        B = pd.concat([pdf,idf],axis=0)
     if not is_debug:
+        boto_wrapper.s3_to_redshift(dataframe=B, table_name="su_raw_intermediate_buzzing",
+                                    engine=R.engine)
+
         boto_wrapper.s3_to_redshift(dataframe=A, table_name=table_config["eval_intermediate"]["pdf_table"],
-                                    engine=R.engine)
+                                   engine=R.engine)
         boto_wrapper.s3_to_redshift(dataframe=common_parsely,
-                                    table_name=table_config["eval_intermediate"]["i_hits_comparison"],
-                                    engine=R.engine)
+                                   table_name=table_config["eval_intermediate"]["i_hits_comparison"],
+                                   engine=R.engine)
 
 
     if stats['Number_of_sites'] < SITE_THRESHOLD or len(stats["bad_performing_sites"]) > 10 or len(

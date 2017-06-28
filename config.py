@@ -1,6 +1,6 @@
-table_config = {"eval_final":{"stats_table":"su_buzzing_stats_comparison","pdf_table":"su_metrics_final_output"},"eval_intermediate":{"pdf_table":"su_buzzing_intermediate_metrics","i_hits_comparison":"su_buzzing_i_hits_comparison"}}
+table_config = {"eval_final":{"stats_table":"su_buzzing_stats_comparison","stats_table_100":"su_final_reconciliation_top_100","pdf_table":"su_metrics_final_output"},"eval_intermediate":{"pdf_table":"su_buzzing_intermediate_metrics","i_hits_comparison":"su_buzzing_i_hits_comparison"}}
 PROD_FINAL_OUTPUT_LOC = 's3://hearstkinesisdata/v4/'
-DEV_FINAL_OUTPUT_LOC = "s3://hearstdataservices/buzzing/v4/"
+DEV_FINAL_OUTPUT_LOC = 's3://hearstkinesisdata/v5/'
 PROD_INTERMEDIATE_OUTPUT_LOC = 's3://hearstkinesisdata/processedsparkjsonix/'
 DEV_INTERMEDIATE_OUTPUT_LOC = "s3://hearstdataservices/buzzing/parselyjson/"
 
