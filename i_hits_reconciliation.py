@@ -54,7 +54,10 @@ def load_data_from_bucket(bucket_name, filename, is_download=True):
         try:
             concat_a_day(bucket_name, filename)
         except Exception as e:
-            raise Exception(e.args)
+            try:
+                concat_a_day(bucket_name, filename)
+            except:
+                raise Exception(e.args)
     pdf = pd.read_json(filename)
     return pdf
 
@@ -78,7 +81,7 @@ def concat_a_day(bucket_name, filename):
     period_str = "{year}/{month}/{day}/{hour}".format(year=dutc.year, month=month,
                                                                          day=day, hour=hour)
 
-
+    print(period_str)
     all_lines = load_data_new(bucket_name, period_str, delete=True)
     all_lines_json = [json.loads(el) for el in all_lines]
     if not all_lines:
@@ -149,7 +152,7 @@ def main(is_icrossing=True, is_debug=False, is_download=True):
     Apdf = pdf.groupby(["cid", "startq"])["pageviews"].sum().reset_index()
     Apdf["stream"] = "parsely"
     A = Apdf
-
+    print(Apdf.shape)
     df = load_data_from_ihits()
     num_sites = number_of_sites(pdf)
     parsely_missing_urls = get_missing_urls(df, pdf)
@@ -172,6 +175,7 @@ def main(is_icrossing=True, is_debug=False, is_download=True):
     pdf["stream"] = "parsely"
     B = pdf
     if is_icrossing:
+        print(is_icrossing)
         icrossing_filename = "{prefix}_{year}{month}{day}_{hour}.txt".format(prefix="icrossing", year=dutc.year,
                                                                              month=month,
                                                                              day=day,
