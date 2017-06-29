@@ -33,6 +33,9 @@ def get_bucket_string(dt):
     h, m, b = get_string_buckets(dt)
     month = '{:02d}'.format(dt.month)
     day = '{:02d}'.format(dt.day)
+    h = '{:02d}'.format(h)
+    b = '{:02d}'.format(b)
+    m = '{:02d}'.format(m)
     period_str = "{year}/{month}/{day}/{hour}/{minute}/{bucket}/".format(year=dt.year, month=month, day=day, hour=h,
                                                                          minute=m, bucket=b)
     return period_str
@@ -59,6 +62,11 @@ def main(is_redshift=True):
         parsely_start_times = get_start_times(test_lines)
         print(parsely_start_times)
         keys = list(parsely_start_times.keys())
+        total_num = 0
+        for x in parsely_start_times.values():
+            total_num+=x
+
+
         p_diff_max = (hm - keys[0]).seconds / 60
         p_diff_min = (hm - keys[-1]).seconds / 60
         max_instances = parsely_start_times[keys[0]]
@@ -69,17 +77,20 @@ def main(is_redshift=True):
         A["maximum difference in timestamps:"] = "%.2f minutes" % p_diff_max
 
         dfk = {}
-        dfk["max_diff_in_minutes"] = [p_diff_max]
-        dfk["min_diff_in_minutes"] = [p_diff_min]
-        dfk["max_instances"] = [max_instances]
-        dfk["min_instances"] = [min_instances]
-        dfk["time"] = [bucket_str]
+        dfk["max_delay_in_minutes"] = [p_diff_max]
+        dfk["min_delay_in_minutes"] = [p_diff_min]
+        dfk["num_records_with_max_delay"] = [max_instances]
+        dfk["num_records_with_min_delay"] = [min_instances]
+        dfk["total_number_of_records"] = [total_num]
+
+        dfk["script_run_time"] = [bucket_str]
+        dfk["bucket_str"] = [period_str]
         print(dfk)
 
         B = pd.DataFrame.from_dict(dfk)
 
         if is_redshift:
-            boto_wrapper.s3_to_redshift(dataframe=B, table_name="su_test_delay",
+            boto_wrapper.s3_to_redshift(dataframe=B, table_name="su_buzzing_delay",
                                         engine=R.engine)
 
         if p_diff_max > THRESHOLD_MINUTES:
