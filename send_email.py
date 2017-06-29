@@ -6,7 +6,6 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from ts_analysis import main as ts_analysis_main
 from eval_final import main as eval_final_main
-from i_hits_reconciliation import main as i_hits_main
 import argparse
 from_email = "suguroglu@hearst.com"
 to_email = "hds-notifications@hearst.com"
@@ -44,11 +43,6 @@ def run_delay_report(is_debug):
         send_email("Buzzing Warning: Delay in buzzing kinesis", p_diff_max, is_debug)
 
 
-def run_i_hits_comparison(is_icrossing, is_debug):
-
-    i_hits_flag, results = i_hits_main(is_icrossing,is_debug)
-
-
 
 def main(period, is_debug, is_icrossing):
     print("DEBUG: {debug}".format(debug=is_debug))
@@ -60,7 +54,6 @@ def main(period, is_debug, is_icrossing):
     else:
         run_eval_final(period, is_debug, is_icrossing)
 
-    run_i_hits_comparison(is_icrossing, is_debug)
     run_delay_report(is_debug)
 
 
