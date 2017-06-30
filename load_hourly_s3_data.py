@@ -102,6 +102,7 @@ def main(is_icrossing=True, is_debug=False):
             print(exception)
             return "ALERT! intermediate buzzing output not OK", exception
 
+    B = B[["cid","cdid","url","pageviews","startq","url_hash","stream","script_runtime"]]
     if not is_debug:
         boto_wrapper.s3_to_redshift(dataframe=B, table_name="su_raw_intermediate_buzzing",
                                     engine=R.engine)
