@@ -41,13 +41,20 @@ def get_bucket_string(dt):
     return period_str
 
 
-def get_hm_and_period_str(minutes_ago=15):
+def get_hm_and_period_str(minutes_ago=5):
     prev_bucket = datetime.datetime.utcnow() - datetime.timedelta(minutes=minutes_ago)
+    print(prev_bucket)
     dt_rounded = ceil_dt(prev_bucket, datetime.timedelta(minutes=5))
     period_str = get_bucket_string(dt_rounded)
     h, _, min = get_string_buckets(dt_rounded)
-    hm_str = "{h}:{m}".format(h=h, m=min)
-    hm = datetime.datetime.strptime(hm_str, "%H:%M")
+
+    if min != 60:
+        hm_str = "{h}:{m}".format(h=h, m=min)
+        hm = datetime.datetime.strptime(hm_str, "%H:%M")
+    else:
+        hm_str = "{h}:{m}".format(h=h+1, m="00")
+        hm = datetime.datetime.strptime(hm_str, "%H:%M")
+
     bucket_str = datetime.datetime.strftime(dt_rounded,"%Y-%m-%d %H:%M")
     return hm, period_str,bucket_str
 
