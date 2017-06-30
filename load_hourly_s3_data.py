@@ -112,7 +112,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Buzzing Evaluations')
 
     parser.add_argument('--is_icrossing', dest="is_icrossing", type=bool, default=True)
-    parser.add_argument('--is_debug', dest="is_debug", type=bool, default=False)
+    parser.add_argument('--is_debug', dest="is_debug", type=bool, default=True)
 
     args = parser.parse_args()
     main(args.is_icrossing, args.is_debug)

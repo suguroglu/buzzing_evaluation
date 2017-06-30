@@ -41,7 +41,7 @@ def get_bucket_string(dt):
     return period_str
 
 
-def get_hm_and_period_str(minutes_ago=15):
+def get_hm_and_period_str(minutes_ago=5):
     prev_bucket = datetime.datetime.utcnow() - datetime.timedelta(minutes=minutes_ago)
     print(prev_bucket)
     dt_rounded = ceil_dt(prev_bucket, datetime.timedelta(minutes=5))
@@ -59,7 +59,7 @@ def get_hm_and_period_str(minutes_ago=15):
     return hm, period_str,bucket_str
 
 
-def main(is_redshift=True):
+def main(is_redshift=False):
     try:
         hm, period_str,bucket_str = get_hm_and_period_str()
         print(period_str)
