@@ -59,7 +59,7 @@ def get_hm_and_period_str(minutes_ago=5):
     return hm, period_str,bucket_str
 
 
-def main(is_redshift=False):
+def main(is_redshift=True):
     try:
         hm, period_str,bucket_str = get_hm_and_period_str()
         print(period_str)
